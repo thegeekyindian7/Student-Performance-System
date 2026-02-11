@@ -1,0 +1,13 @@
+missing_values:
+  numerical: median
+  categorical: most_frequent
+
+features:
+  numerical:
+    - avg_internal_score
+    - score_variance
+    - study_time
+    - past_failures
+    - absences
+
+  categorical: []

@@ -1,0 +1,21 @@
+data:
+  raw_csv_path: data/raw/student_performance.csv
+  delimiter: ";"
+
+validation:
+  schema_path: configs/schema.yaml
+
+features:
+  config_path: configs/features.yaml
+  label_column: performance_label
+
+split:
+  config_path: configs/split.yaml
+
+preprocessing:
+  config_path: configs/preprocessing.yaml
+
+models:
+  config_path: configs/models.yaml
+labels:
+  config_path: configs/labels.yaml

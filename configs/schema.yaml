@@ -1,0 +1,52 @@
+dataset:
+  primary_key: null   
+
+columns:
+  school:
+    type: category
+    nullable: false
+
+  sex:
+    type: category
+    nullable: false
+    allowed_values: [F, M]
+
+  age:
+    type: integer
+    nullable: false
+    range: [10, 25]
+
+  studytime:
+    type: integer
+    nullable: false
+    range: [1, 4]
+
+  failures:
+    type: integer
+    nullable: false
+    range: [0, 4]
+
+  absences:
+    type: integer
+    nullable: false
+    range: [0, 100]
+
+  G1:
+    type: integer
+    nullable: false
+    range: [0, 20]
+
+  G2:
+    type: integer
+    nullable: false
+    range: [0, 20]
+
+  G3:
+    type: integer
+    nullable: false
+    range: [0, 20]
+
+  performance_label:
+    type: category
+    nullable: false
+    allowed_values: [LOW, MEDIUM, HIGH]

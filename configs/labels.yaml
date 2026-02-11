@@ -1,0 +1,14 @@
+source_score_column: G3
+label_column: performance_label
+
+# G3 ∈ [0, 20]
+bins:
+  - -1
+  - 9
+  - 14
+  - 20
+
+labels:
+  - LOW
+  - MEDIUM
+  - HIGH

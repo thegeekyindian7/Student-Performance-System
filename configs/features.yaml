@@ -1,0 +1,22 @@
+features:
+  - name: avg_internal_score
+    type: aggregate
+    source_columns: [G1, G2]
+    method: mean
+
+  - name: score_variance
+    type: aggregate
+    source_columns: [G1, G2]
+    method: variance
+
+  - name: study_time
+    type: direct
+    source_column: studytime
+
+  - name: past_failures
+    type: direct
+    source_column: failures
+
+  - name: absences
+    type: direct
+    source_column: absences
