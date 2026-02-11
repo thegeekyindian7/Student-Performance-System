@@ -15,13 +15,29 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🎓 Student Performance Prediction System")
+st.title(" Student Performance Prediction System")
 st.caption(
     "Reproducible ML system for multiclass student performance prediction"
 )
 
 MODELS_DIR = Path("artifacts/models")
 METRICS_PATH = Path("artifacts/plots/metrics_summary.csv")
+
+def ensure_models_exist():
+    if not MODELS_DIR.exists() or not list(MODELS_DIR.glob("*.pkl")):
+        st.warning("Models not found. Running training pipeline once...")
+        import subprocess
+
+        result = subprocess.run(
+            ["python", "main.py", "run", "--config", "configs/experiment.yaml"],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode != 0:
+            st.error("Model training failed during deployment.")
+            st.code(result.stderr)
+            st.stop()
 
 @st.cache_resource
 def load_models():
@@ -31,7 +47,9 @@ def load_models():
             models[model_file.stem] = pickle.load(f)
     return models
 
+ensure_models_exist()
 models = load_models()
+
 
 if not models:
     st.error("No trained models found. Please run the pipeline first.")
@@ -135,7 +153,7 @@ if submit:
     )
 
 st.divider()
-st.header("📈 Model Comparison")
+st.header(" Model Comparison")
 
 if METRICS_PATH.exists():
     metrics_df = pd.read_csv(METRICS_PATH)
