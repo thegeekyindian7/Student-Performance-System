@@ -6,3 +6,4 @@ matplotlib
 seaborn
 streamlit
 pyyaml
+altair==4.2.2
