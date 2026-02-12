@@ -153,6 +153,7 @@ st.header(" Model Comparison")
 
 if METRICS_PATH.exists():
     metrics_df = pd.read_csv(METRICS_PATH)
+
     metrics_df = metrics_df.loc[:, ~metrics_df.columns.str.contains("^Unnamed")]
     metrics_df.rename(
         columns={
@@ -174,23 +175,3 @@ if METRICS_PATH.exists():
     st.dataframe(metrics_df, use_container_width=True)
 else:
     st.warning("Metrics summary not found. Run the pipeline to generate metrics.")
-
-
-st.subheader("Confusion Matrices")
-
-models_order = metrics_df["Model"].tolist()
-
-row1 = st.columns(3)
-row2 = st.columns(2)
-
-for i, display_name in enumerate(models_order):
-    model_key = [k for k, v in MODEL_NAME_MAP.items() if v == display_name][0]
-    img_path = Path(f"artifacts/plots/confusion_matrix_{model_key}.png")
-
-    if img_path.exists():
-        if i < 3:
-            with row1[i]:
-                st.image(img_path, caption=display_name, use_column_width=True)
-        else:
-            with row2[i - 3]:
-                st.image(img_path, caption=display_name, use_column_width=True)
