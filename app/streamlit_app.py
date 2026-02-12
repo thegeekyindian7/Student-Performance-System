@@ -9,6 +9,14 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+MODEL_NAME_MAP = {
+    "logistic_regression": "Logistic Regression",
+    "decision_tree": "Decision Tree",
+    "random_forest": "Random Forest",
+    "svm": "Support Vector Machine",
+    "xgboost": "XGBoost"
+}
+
 
 st.set_page_config(
     page_title="Student Performance Prediction",
@@ -23,22 +31,6 @@ st.caption(
 MODELS_DIR = Path("artifacts/models")
 METRICS_PATH = Path("artifacts/plots/metrics_summary.csv")
 
-def ensure_models_exist():
-    if not MODELS_DIR.exists() or not list(MODELS_DIR.glob("*.pkl")):
-        st.warning("Models not found. Running training pipeline once...")
-        import subprocess
-
-        result = subprocess.run(
-            ["python", "main.py", "run", "--config", "configs/experiment.yaml"],
-            capture_output=True,
-            text=True
-        )
-
-        if result.returncode != 0:
-            st.error("Model training failed during deployment.")
-            st.code(result.stderr)
-            st.stop()
-
 @st.cache_resource
 def load_models():
     models = {}
@@ -47,7 +39,6 @@ def load_models():
             models[model_file.stem] = pickle.load(f)
     return models
 
-ensure_models_exist()
 models = load_models()
 
 
@@ -61,15 +52,20 @@ model_names = list(models.keys())
 
 default_model = "xgboost" if "xgboost" in model_names else model_names[0]
 
-selected_model_name = st.sidebar.selectbox(
+display_names = [MODEL_NAME_MAP.get(m, m) for m in model_names]
+
+selected_display_name = st.sidebar.selectbox(
     "Choose model for prediction",
-    options=model_names,
-    index=model_names.index(default_model),
+    options=display_names,
+    index=display_names.index(MODEL_NAME_MAP.get(default_model, default_model)),
     help="XGBoost is recommended based on comparative evaluation"
 )
 
-selected_model = models[selected_model_name]
+selected_model_name = [
+    k for k, v in MODEL_NAME_MAP.items() if v == selected_display_name
+][0]
 
+selected_model = models[selected_model_name]
 
 st.header("Student Input")
 
@@ -157,12 +153,44 @@ st.header(" Model Comparison")
 
 if METRICS_PATH.exists():
     metrics_df = pd.read_csv(METRICS_PATH)
+    metrics_df = metrics_df.loc[:, ~metrics_df.columns.str.contains("^Unnamed")]
+    metrics_df.rename(
+        columns={
+            "model": "Model",
+            "accuracy": "Accuracy",
+            "precision_macro": "Precision (Macro)",
+            "recall_macro": "Recall (Macro)",
+            "f1_macro": "F1 Score (Macro)",
+        },
+        inplace=True,
+    )
+    metrics_df["Model"] = metrics_df["Model"].map(MODEL_NAME_MAP)
 
     st.bar_chart(
-        metrics_df.set_index("model")["accuracy"],
+        metrics_df.set_index("Model")["Accuracy"],
         use_container_width=True
     )
 
     st.dataframe(metrics_df, use_container_width=True)
 else:
     st.warning("Metrics summary not found. Run the pipeline to generate metrics.")
+
+
+st.subheader("Confusion Matrices")
+
+models_order = metrics_df["Model"].tolist()
+
+row1 = st.columns(3)
+row2 = st.columns(2)
+
+for i, display_name in enumerate(models_order):
+    model_key = [k for k, v in MODEL_NAME_MAP.items() if v == display_name][0]
+    img_path = Path(f"artifacts/plots/confusion_matrix_{model_key}.png")
+
+    if img_path.exists():
+        if i < 3:
+            with row1[i]:
+                st.image(img_path, caption=display_name, use_column_width=True)
+        else:
+            with row2[i - 3]:
+                st.image(img_path, caption=display_name, use_column_width=True)
