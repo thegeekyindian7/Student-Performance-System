@@ -21,3 +21,6 @@ class XGBoostModel(BaseModel):
 
     def get_name(self) -> str:
         return "xgboost"
+    
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)

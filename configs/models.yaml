@@ -19,6 +19,7 @@ models:
       kernel: rbf
       C: 1.0
       gamma: scale
+      probability: True
 
   xgboost:
     params:

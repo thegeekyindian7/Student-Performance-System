@@ -16,3 +16,6 @@ class DecisionTreeModel(BaseModel):
 
     def get_name(self) -> str:
         return "decision_tree"
+    
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)

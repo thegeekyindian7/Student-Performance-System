@@ -16,3 +16,6 @@ class LogisticRegressionModel(BaseModel):
 
     def get_name(self) -> str:
         return "logistic_regression"
+
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)

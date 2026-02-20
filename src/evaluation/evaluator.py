@@ -2,6 +2,8 @@ from pathlib import Path
 import json
 import pickle
 import numpy as np
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_curve, auc
 
 from sklearn.metrics import (
     accuracy_score,
@@ -10,8 +12,6 @@ from sklearn.metrics import (
     f1_score,
     confusion_matrix,
 )
-
-
 class EvaluationError(Exception):
     pass
 
@@ -44,6 +44,29 @@ def evaluate_model(
         y_pred = model.predict(X_test)
     except Exception as e:
         raise EvaluationError(f"Prediction failed: {e}") from e
+    
+    
+    try:
+        y_proba = model.predict_proba(X_test)
+    except AttributeError:
+        raise EvaluationError(
+            "Model does not support probability prediction (predict_proba required for ROC)"
+        )
+    
+    class_labels = ["LOW", "MEDIUM", "HIGH"]
+    y_test_bin = label_binarize(y_test, classes=class_labels)
+
+    roc_data = {}
+
+    for i, label in enumerate(class_labels):
+        fpr, tpr, _ = roc_curve(y_test_bin[:, i], y_proba[:, i])
+        roc_auc = auc(fpr, tpr)
+
+        roc_data[label] = {
+            "fpr": fpr.tolist(),
+            "tpr": tpr.tolist(),
+            "auc": roc_auc,
+        }
 
     metrics = {
         "accuracy": accuracy_score(y_test, y_pred),
@@ -59,6 +82,7 @@ def evaluate_model(
         "confusion_matrix": confusion_matrix(
             y_test, y_pred, labels=["LOW", "MEDIUM", "HIGH"]
         ).tolist(),
+        "roc": roc_data,
     }
 
     output_path = Path(output_dir)

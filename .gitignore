@@ -16,6 +16,9 @@ artifacts/*
 !artifacts/models/*.pkl
 !artifacts/plots/
 !artifacts/plots/metrics_summary.csv
+!artifacts/plots/
+!artifacts/plots/*.png
+
 
 
 *.log

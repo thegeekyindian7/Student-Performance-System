@@ -3,14 +3,10 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-
 class ReportingError(Exception):
     pass
 
-
 LABEL_ORDER = ["LOW", "MEDIUM", "HIGH"]
-
 
 def load_metrics(metrics_dir: str) -> dict:
     path = Path(metrics_dir)
@@ -33,7 +29,6 @@ def load_metrics(metrics_dir: str) -> dict:
 
     return metrics
 
-
 def generate_metrics_csv(metrics: dict, output_path: str):
     rows = []
 
@@ -50,7 +45,6 @@ def generate_metrics_csv(metrics: dict, output_path: str):
     df.to_csv(output_path, index=False)
 
     return df
-
 
 def plot_confusion_matrix(cm, model_name: str, output_dir: str):
     plt.figure(figsize=(6, 5))
@@ -71,7 +65,6 @@ def plot_confusion_matrix(cm, model_name: str, output_dir: str):
     plt.savefig(output_path)
     plt.close()
 
-
 def plot_accuracy_comparison(metrics_df: pd.DataFrame, output_dir: str):
     plt.figure(figsize=(8, 5))
 
@@ -81,9 +74,7 @@ def plot_accuracy_comparison(metrics_df: pd.DataFrame, output_dir: str):
         y="accuracy",
     )
 
-    
     ax.yaxis.set_major_formatter(lambda x, _: f"{x:.4f}")
-
     
     for p in ax.patches:
         value = p.get_height()
@@ -96,7 +87,6 @@ def plot_accuracy_comparison(metrics_df: pd.DataFrame, output_dir: str):
             xytext=(0, 3),
             textcoords="offset points",
         )
-
     
     min_acc = metrics_df["accuracy"].min()
     max_acc = metrics_df["accuracy"].max()
@@ -116,7 +106,26 @@ def plot_accuracy_comparison(metrics_df: pd.DataFrame, output_dir: str):
     plt.savefig(output_path)
     plt.close()
 
+def plot_multiclass_roc(roc_data: dict, model_name: str, output_dir: str):
+    plt.figure(figsize=(7, 6))
 
+    for label, data in roc_data.items():
+        plt.plot(
+            data["fpr"],
+            data["tpr"],
+            label=f"{label} (AUC = {data['auc']:.3f})",
+        )
+
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(f"ROC Curve — {model_name}")
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+
+    output_path = Path(output_dir) / f"roc_{model_name}.png"
+    plt.savefig(output_path)
+    plt.close()
 
 def generate_reports(metrics_dir: str, output_dir: str):
     metrics = load_metrics(metrics_dir)
@@ -131,6 +140,12 @@ def generate_reports(metrics_dir: str, output_dir: str):
     for model_name, m in metrics.items():
         plot_confusion_matrix(
             cm=m["confusion_matrix"],
+            model_name=model_name,
+            output_dir=output_dir,
+        )
+
+        plot_multiclass_roc(
+            roc_data=m["roc"],
             model_name=model_name,
             output_dir=output_dir,
         )

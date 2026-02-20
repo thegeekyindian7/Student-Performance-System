@@ -16,3 +16,6 @@ class RandomForestModel(BaseModel):
 
     def get_name(self) -> str:
         return "random_forest"
+    
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)
